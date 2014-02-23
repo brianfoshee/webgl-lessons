@@ -5,19 +5,15 @@ This repository contains a series of simple lessons in WebGL, plus some
 related examples.
 
 The folders named lesson01, lesson02, and so on are a sequential tutorial and
-are best understood using the explanatory text at:
-
-    <http://learningwebgl.com/lessons/>
+are best understood using the [explanatory text](http://learningwebgl.com/lessons/).
 
 The form of the first ten lessons is *very* loosely based on NeHe Productions'
-well-known OpenGL tutorial, which can be found here:
-
-    <http://nehe.gamedev.net/>
+well-known OpenGL tutorial, which can be found [here](http://nehe.gamedev.net/).
 
 The lessons from 11 onwards are not related to the NeHe ones.
 
-The folders named example01 etc are example code for interesting stuff outside
-the scope of the tutorial, and have their own README.txt files with details.
+The folders named `example01` etc are example code for interesting stuff outside
+the scope of the tutorial, and have their own `README.txt` files with details.
 
 
 Problems seeing the lessons?
@@ -40,7 +36,7 @@ a local webserver, but an alternative if you're careful about it is to
 temporarily disable the cross-origin restrictions.
 
 The dangerous way
-~~~~~~~~~~~~~~~~~
+---------------------
 
 Switch off the same-origin policy.  This is perfectly safe if you're only
 going to use the browser for testing your own code, but isn't a good idea
@@ -57,17 +53,24 @@ without thinking about it).  Still, if you want to do this:
    <http://aussiebloke.blogspot.com/2011/08/local-file-system-development-with.html>
 
 
-The safe way
-~~~~~~~~~~~~
+The safe way #1
+--------------
 
-Here are instructions on how to run a local web server to host these
+Run a Ruby/Python/Perl etc server directly in the folder
+
+- `cd webgl-lessons` 
+- Run any of the one-liners from [this gist](https://gist.github.com/willurd/5720255) depending on what you have installed on your machine
+    
+The safe way #2
+--------------
+
+Run a local web server to host these
 lessons using Apache under Mac OS X; GNU/Linux will be similar.  If you're
-on Windows, check out Xampp at <http://www.apachefriends.org/en/xampp.html>
-
+on Windows, check out [Xampp](http://www.apachefriends.org/en/xampp.html).
 
 1) Add an entry for webgl-lessons.local in /etc/hosts.
 
-This will need to be done as the root user using your preferred editor:
+ This will need to be done as the root user using your preferred editor:
 
     $ sudo <editor> /etc/hosts
 
