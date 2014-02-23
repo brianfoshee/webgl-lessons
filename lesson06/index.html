@@ -199,10 +199,12 @@
                 filter = 0;
             }
         }
+        event.preventDefault();
     }
 
     function handleKeyUp(event) {
         currentlyPressedKeys[event.keyCode] = false;
+        event.preventDefault();
     }
 
     function handleKeys() {
