@@ -4,8 +4,8 @@
 <title>Learning WebGL &mdash; lesson 16</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
-<script type="text/javascript" src="webgl-utils.js"></script>
+<script type="text/javascript" src="../assets/gl-matrix.min.js"></script>
+<script type="text/javascript" src="../assets/webgl-utils.js"></script>
 
 <script id="per-fragment-lighting-fs" type="x-shader/x-fragment">
     precision mediump float;
@@ -30,7 +30,6 @@
     uniform vec3 uPointLightingSpecularColor;
 
     uniform sampler2D uSampler;
-
 
     void main(void) {
         vec3 ambientLightWeighting = uAmbientLightingColor;
@@ -85,7 +84,6 @@
     varying vec3 vTransformedNormal;
     varying vec4 vPosition;
 
-
     void main(void) {
         vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
         gl_Position = uPMatrix * vPosition;
@@ -93,7 +91,6 @@
         vTransformedNormal = uNMatrix * aVertexNormal;
     }
 </script>
-
 
 <script type="text/javascript">
 
@@ -110,7 +107,6 @@
             alert("Could not initialise WebGL, sorry :-(");
         }
     }
-
 
     function getShader(gl, id) {
         var shaderScript = document.getElementById(id);
@@ -146,7 +142,6 @@
 
         return shader;
     }
-
 
     var shaderProgram;
 
@@ -192,7 +187,6 @@
         shaderProgram.pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingDiffuseColor");
     }
 
-
     function handleLoadedTexture(texture) {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -203,7 +197,6 @@
 
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
-
 
     var moonTexture;
     var crateTexture;
@@ -224,14 +217,13 @@
         crateTexture.image.src = "crate.gif";
     }
 
-
     var mvMatrix = mat4.create();
     var mvMatrixStack = [];
     var pMatrix = mat4.create();
 
     function mvPushMatrix() {
         var copy = mat4.create();
-        mat4.set(mvMatrix, copy);
+        mat4.copy(copy, mvMatrix);
         mvMatrixStack.push(copy);
     }
 
@@ -247,15 +239,13 @@
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 
         var normalMatrix = mat3.create();
-        mat4.toInverseMat3(mvMatrix, normalMatrix);
-        mat3.transpose(normalMatrix);
+        mat3.normalFromMat4(normalMatrix, mvMatrix);
         gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
     }
 
     function degToRad(degrees) {
         return degrees * Math.PI / 180;
     }
-
 
     var rttFramebuffer;
     var rttTexture;
@@ -285,7 +275,6 @@
         gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
-
 
     var cubeVertexPositionBuffer;
     var cubeVertexNormalBuffer;
@@ -445,7 +434,6 @@
         cubeVertexIndexBuffer.itemSize = 1;
         cubeVertexIndexBuffer.numItems = 36;
 
-
         var latitudeBands = 30;
         var longitudeBands = 30;
         var radius = 1;
@@ -519,7 +507,6 @@
         moonVertexIndexBuffer.itemSize = 1;
         moonVertexIndexBuffer.numItems = indexData.length;
 
-
         laptopScreenVertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, laptopScreenVertexPositionBuffer);
         vertices = [
@@ -557,7 +544,6 @@
         laptopScreenVertexTextureCoordBuffer.numItems = 4;
     }
 
-
     var laptopVertexPositionBuffer;
     var laptopVertexNormalBuffer;
     var laptopVertexTextureCoordBuffer;
@@ -589,7 +575,6 @@
         laptopVertexIndexBuffer.numItems = laptopData.indices.length;
     }
 
-
     function loadLaptop() {
         var request = new XMLHttpRequest();
         request.open("GET", "macbook.json");
@@ -601,8 +586,6 @@
         request.send();
     }
 
-
-
     var laptopScreenAspectRatio = 1.66;
 
     var moonAngle = 180;
@@ -612,7 +595,7 @@
         gl.viewport(0, 0, rttFramebuffer.width, rttFramebuffer.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        mat4.perspective(45, laptopScreenAspectRatio, 0.1, 100.0, pMatrix);
+        mat4.perspective(pMatrix, 45, laptopScreenAspectRatio, 0.1, 100.0);
 
         gl.uniform1i(shaderProgram.showSpecularHighlightsUniform, false);
         gl.uniform3f(shaderProgram.ambientLightingColorUniform, 0.2, 0.2, 0.2);
@@ -630,12 +613,12 @@
 
         mat4.identity(mvMatrix);
 
-        mat4.translate(mvMatrix, [0, 0, -5]);
-        mat4.rotate(mvMatrix, degToRad(30), [1, 0, 0]);
+        mat4.translate(mvMatrix, mvMatrix, [0, 0, -5]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(30), [1, 0, 0]);
 
         mvPushMatrix();
-        mat4.rotate(mvMatrix, degToRad(moonAngle), [0, 1, 0]);
-        mat4.translate(mvMatrix, [2, 0, 0]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(moonAngle), [0, 1, 0]);
+        mat4.translate(mvMatrix, mvMatrix, [2, 0, 0]);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, moonTexture);
         gl.uniform1i(shaderProgram.samplerUniform, 0);
@@ -654,10 +637,9 @@
         gl.drawElements(gl.TRIANGLES, moonVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
         mvPopMatrix();
 
-
         mvPushMatrix();
-        mat4.rotate(mvMatrix, degToRad(cubeAngle), [0, 1, 0]);
-        mat4.translate(mvMatrix, [1.25, 0, 0]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(cubeAngle), [0, 1, 0]);
+        mat4.translate(mvMatrix, mvMatrix, [1.25, 0, 0]);
         gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
         gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
@@ -681,7 +663,6 @@
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-
     var laptopAngle = 0;
 
     function drawScene() {
@@ -693,15 +674,15 @@
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
         mat4.identity(mvMatrix);
 
         mvPushMatrix();
 
-        mat4.translate(mvMatrix, [0, -0.4, -2.2]);
-        mat4.rotate(mvMatrix, degToRad(laptopAngle), [0, 1, 0]);
-        mat4.rotate(mvMatrix, degToRad(-90), [1, 0, 0]);
+        mat4.translate(mvMatrix, mvMatrix, [0, -0.4, -2.2]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(laptopAngle), [0, 1, 0]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(-90), [1, 0, 0]);
 
         gl.uniform1i(shaderProgram.showSpecularHighlightsUniform, true);
         gl.uniform3f(shaderProgram.pointLightingLocationUniform, -1, 2, -1);
@@ -759,7 +740,6 @@
         mvPopMatrix();
     }
 
-
     var lastTime = 0;
 
     function animate() {
@@ -775,13 +755,11 @@
         lastTime = timeNow;
     }
 
-
     function tick() {
         requestAnimFrame(tick);
         drawScene();
         animate();
     }
-
 
     function webGLStart() {
         var canvas = document.getElementById("lesson16-canvas");
@@ -800,9 +778,7 @@
 
 </script>
 
-
 </head>
-
 
 <body onload="webGLStart();">
     <a href="http://learningwebgl.com/blog/?p=1786">&lt;&lt; Back to Lesson 16</a><br />
