@@ -143,6 +143,11 @@
         for (var i=0; i < 3; i++) {
             var texture = gl.createTexture();
             texture.image = crateImage;
+            // Set a black texture while waiting on the image to load.
+            // Avoids errors about power of 2 and level 0 texture.
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+              new Uint8Array([0, 0, 0, 255]));
             crateTextures.push(texture);
         }
 

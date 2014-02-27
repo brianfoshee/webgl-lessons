@@ -126,6 +126,11 @@
 
     function initTexture() {
         neheTexture = gl.createTexture();
+        // Set a black texture while waiting on the image to load.
+        // Avoids errors about power of 2 and level 0 texture.
+        gl.bindTexture(gl.TEXTURE_2D, neheTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+              new Uint8Array([0, 0, 0, 255]));
         neheTexture.image = new Image();
         neheTexture.image.onload = function () {
             handleLoadedTexture(neheTexture)
