@@ -4,8 +4,8 @@
 <title>Learning WebGL &mdash; lesson 10</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
-<script type="text/javascript" src="webgl-utils.js"></script>
+<script type="text/javascript" src="../assets/gl-matrix.min.js"></script>
+<script type="text/javascript" src="../assets/webgl-utils.js"></script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
@@ -34,7 +34,6 @@
     }
 </script>
 
-
 <script type="text/javascript">
 
     var gl;
@@ -50,7 +49,6 @@
             alert("Could not initialise WebGL, sorry :-(");
         }
     }
-
 
     function getShader(gl, id) {
         var shaderScript = document.getElementById(id);
@@ -87,7 +85,6 @@
         return shader;
     }
 
-
     var shaderProgram;
 
     function initShaders() {
@@ -116,7 +113,6 @@
         shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     }
 
-
     function handleLoadedTexture(texture) {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -126,7 +122,6 @@
 
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
-
 
     var mudTexture;
 
@@ -140,14 +135,13 @@
         mudTexture.image.src = "mud.gif";
     }
 
-
     var mvMatrix = mat4.create();
     var mvMatrixStack = [];
     var pMatrix = mat4.create();
 
     function mvPushMatrix() {
         var copy = mat4.create();
-        mat4.set(mvMatrix, copy);
+        mat4.copy(copy, mvMatrix);
         mvMatrixStack.push(copy);
     }
 
@@ -158,18 +152,14 @@
         mvMatrix = mvMatrixStack.pop();
     }
 
-
     function setMatrixUniforms() {
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
     }
 
-
     function degToRad(degrees) {
         return degrees * Math.PI / 180;
     }
-
-
 
     var currentlyPressedKeys = {};
 
@@ -177,11 +167,9 @@
         currentlyPressedKeys[event.keyCode] = true;
     }
 
-
     function handleKeyUp(event) {
         currentlyPressedKeys[event.keyCode] = false;
     }
-
 
     var pitch = 0;
     var pitchRate = 0;
@@ -228,7 +216,6 @@
 
     }
 
-
     var worldVertexPositionBuffer = null;
     var worldVertexTextureCoordBuffer = null;
 
@@ -268,7 +255,6 @@
         document.getElementById("loadingtext").textContent = "";
     }
 
-
     function loadWorld() {
         var request = new XMLHttpRequest();
         request.open("GET", "world.txt");
@@ -280,8 +266,6 @@
         request.send();
     }
 
-
-
     function drawScene() {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -290,13 +274,13 @@
             return;
         }
 
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
         mat4.identity(mvMatrix);
 
-        mat4.rotate(mvMatrix, degToRad(-pitch), [1, 0, 0]);
-        mat4.rotate(mvMatrix, degToRad(-yaw), [0, 1, 0]);
-        mat4.translate(mvMatrix, [-xPos, -yPos, -zPos]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(-pitch), [1, 0, 0]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(-yaw), [0, 1, 0]);
+        mat4.translate(mvMatrix, mvMatrix, [-xPos, -yPos, -zPos]);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, mudTexture);
@@ -311,7 +295,6 @@
         setMatrixUniforms();
         gl.drawArrays(gl.TRIANGLES, 0, worldVertexPositionBuffer.numItems);
     }
-
 
     var lastTime = 0;
     // Used to make us "jog" up and down as we move forward.
@@ -337,15 +320,12 @@
         lastTime = timeNow;
     }
 
-
     function tick() {
         requestAnimFrame(tick);
         handleKeys();
         drawScene();
         animate();
     }
-
-
 
     function webGLStart() {
         var canvas = document.getElementById("lesson10-canvas");
@@ -375,10 +355,7 @@
     }
 </style>
 
-
-
 </head>
-
 
 <body onload="webGLStart();">
     <a href="http://learningwebgl.com/blog/?p=1067">&lt;&lt; Back to Lesson 10</a><br />

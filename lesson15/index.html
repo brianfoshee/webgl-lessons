@@ -4,8 +4,8 @@
 <title>Learning WebGL &mdash; lesson 15</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
-<script type="text/javascript" src="webgl-utils.js"></script>
+<script type="text/javascript" src="../assets/gl-matrix.min.js"></script>
+<script type="text/javascript" src="../assets/webgl-utils.js"></script>
 
 <script id="per-fragment-lighting-fs" type="x-shader/x-fragment">
     precision mediump float;
@@ -26,7 +26,6 @@
 
     uniform sampler2D uColorMapSampler;
     uniform sampler2D uSpecularMapSampler;
-
 
     void main(void) {
         vec3 lightWeighting;
@@ -77,7 +76,6 @@
     varying vec3 vTransformedNormal;
     varying vec4 vPosition;
 
-
     void main(void) {
         vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
         gl_Position = uPMatrix * vPosition;
@@ -85,7 +83,6 @@
         vTransformedNormal = uNMatrix * aVertexNormal;
     }
 </script>
-
 
 <script type="text/javascript">
 
@@ -102,7 +99,6 @@
             alert("Could not initialise WebGL, sorry :-(");
         }
     }
-
 
     function getShader(gl, id) {
         var shaderScript = document.getElementById(id);
@@ -138,7 +134,6 @@
 
         return shader;
     }
-
 
     var shaderProgram;
 
@@ -180,7 +175,6 @@
         shaderProgram.pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingDiffuseColor");
     }
 
-
     function handleLoadedTexture(texture) {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -191,7 +185,6 @@
 
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
-
 
     var earthColorMapTexture;
     var earthSpecularMapTexture;
@@ -212,15 +205,13 @@
         earthSpecularMapTexture.image.src = "earth-specular.gif";
     }
 
-
-
     var mvMatrix = mat4.create();
     var mvMatrixStack = [];
     var pMatrix = mat4.create();
 
     function mvPushMatrix() {
         var copy = mat4.create();
-        mat4.set(mvMatrix, copy);
+        mat4.copy(copy, mvMatrix);
         mvMatrixStack.push(copy);
     }
 
@@ -236,15 +227,13 @@
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 
         var normalMatrix = mat3.create();
-        mat4.toInverseMat3(mvMatrix, normalMatrix);
-        mat3.transpose(normalMatrix);
+        mat3.normalFromMat4(normalMatrix, mvMatrix);
         gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
     }
 
     function degToRad(degrees) {
         return degrees * Math.PI / 180;
     }
-
 
     var sphereVertexNormalBuffer;
     var sphereVertexTextureCoordBuffer;
@@ -326,14 +315,13 @@
         sphereVertexIndexBuffer.numItems = indexData.length;
     }
 
-
     var earthAngle = 180;
 
     function drawScene() {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
         var useColorMap = document.getElementById("color-map").checked;
         gl.uniform1i(shaderProgram.useColorMapUniform, useColorMap);
@@ -375,9 +363,9 @@
 
         mat4.identity(mvMatrix);
 
-        mat4.translate(mvMatrix, [0, 0, -40]);
-        mat4.rotate(mvMatrix, degToRad(23.4), [1, 0, -1]);
-        mat4.rotate(mvMatrix, degToRad(earthAngle), [0, 1, 0]);
+        mat4.translate(mvMatrix, mvMatrix, [0, 0, -40]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(23.4), [1, 0, -1]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(earthAngle), [0, 1, 0]);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, earthColorMapTexture);
@@ -401,7 +389,6 @@
         gl.drawElements(gl.TRIANGLES, sphereVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     }
 
-
     var lastTime = 0;
 
     function animate() {
@@ -414,14 +401,11 @@
         lastTime = timeNow;
     }
 
-
-
     function tick() {
         requestAnimFrame(tick);
         drawScene();
         animate();
     }
-
 
     function webGLStart() {
         var canvas = document.getElementById("lesson15-canvas");
@@ -439,7 +423,6 @@
 </script>
 
 </head>
-
 
 <body onload="webGLStart();">
     <a href="http://learningwebgl.com/blog/?p=1778">&lt;&lt; Back to Lesson 15</a><br />

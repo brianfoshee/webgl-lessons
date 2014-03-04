@@ -4,8 +4,8 @@
 <title>Learning WebGL &mdash; lesson 9</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
-<script type="text/javascript" src="webgl-utils.js"></script>
+<script type="text/javascript" src="../assets/gl-matrix.min.js"></script>
+<script type="text/javascript" src="../assets/webgl-utils.js"></script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
@@ -37,7 +37,6 @@
     }
 </script>
 
-
 <script type="text/javascript">
 
     var gl;
@@ -53,7 +52,6 @@
             alert("Could not initialise WebGL, sorry :-(");
         }
     }
-
 
     function getShader(gl, id) {
         var shaderScript = document.getElementById(id);
@@ -90,7 +88,6 @@
         return shader;
     }
 
-
     var shaderProgram;
 
     function initShaders() {
@@ -120,7 +117,6 @@
         shaderProgram.colorUniform = gl.getUniformLocation(shaderProgram, "uColor");
     }
 
-
     function handleLoadedTexture(texture) {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -130,7 +126,6 @@
 
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
-
 
     var starTexture;
 
@@ -144,14 +139,13 @@
         starTexture.image.src = "star.gif";
     }
 
-
     var mvMatrix = mat4.create();
     var mvMatrixStack = [];
     var pMatrix = mat4.create();
 
     function mvPushMatrix() {
         var copy = mat4.create();
-        mat4.set(mvMatrix, copy);
+        mat4.copy(copy, mvMatrix);
         mvMatrixStack.push(copy);
     }
 
@@ -162,17 +156,14 @@
         mvMatrix = mvMatrixStack.pop();
     }
 
-
     function setMatrixUniforms() {
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
     }
 
-
     function degToRad(degrees) {
         return degrees * Math.PI / 180;
     }
-
 
     var currentlyPressedKeys = {};
 
@@ -180,18 +171,14 @@
         currentlyPressedKeys[event.keyCode] = true;
     }
 
-
     function handleKeyUp(event) {
         currentlyPressedKeys[event.keyCode] = false;
     }
 
-
     var zoom = -15;
-
 
     var tilt = 90;
     var spin = 0;
-
 
     function handleKeys() {
         if (currentlyPressedKeys[33]) {
@@ -211,7 +198,6 @@
             tilt -= 2;
         }
     }
-
 
     var starVertexPositionBuffer;
     var starVertexTextureCoordBuffer;
@@ -242,7 +228,6 @@
         starVertexTextureCoordBuffer.numItems = 4;
     }
 
-
     function drawStar() {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, starTexture);
@@ -258,8 +243,6 @@
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, starVertexPositionBuffer.numItems);
     }
 
-
-
     function Star(startingDistance, rotationSpeed) {
         this.angle = 0;
         this.dist = startingDistance;
@@ -273,12 +256,12 @@
         mvPushMatrix();
 
         // Move to the star's position
-        mat4.rotate(mvMatrix, degToRad(this.angle), [0.0, 1.0, 0.0]);
-        mat4.translate(mvMatrix, [this.dist, 0.0, 0.0]);
+        mat4.rotateY(mvMatrix, mvMatrix, degToRad(this.angle));
+        mat4.translate(mvMatrix, mvMatrix, [this.dist, 0.0, 0.0]);
 
         // Rotate back so that the star is facing the viewer
-        mat4.rotate(mvMatrix, degToRad(-this.angle), [0.0, 1.0, 0.0]);
-        mat4.rotate(mvMatrix, degToRad(-tilt), [1.0, 0.0, 0.0]);
+        mat4.rotateY(mvMatrix, mvMatrix, degToRad(-this.angle));
+        mat4.rotateX(mvMatrix, mvMatrix, degToRad(-tilt));
 
         if (twinkle) {
             // Draw a non-rotating star in the alternate "twinkling" color
@@ -287,7 +270,7 @@
         }
 
         // All stars spin around the Z axis at the same rate
-        mat4.rotate(mvMatrix, degToRad(spin), [0.0, 0.0, 1.0]);
+        mat4.rotateZ(mvMatrix, mvMatrix, degToRad(spin));
 
         // Draw the star in its main color
         gl.uniform3f(shaderProgram.colorUniform, this.r, this.g, this.b);
@@ -295,7 +278,6 @@
 
         mvPopMatrix();
     };
-
 
     var effectiveFPMS = 60 / 1000;
     Star.prototype.animate = function (elapsedTime) {
@@ -310,7 +292,6 @@
         }
 
     };
-
 
     Star.prototype.randomiseColors = function () {
         // Give the star a random color for normal
@@ -327,8 +308,6 @@
         this.twinkleB = Math.random();
     };
 
-
-
     var stars = [];
 
     function initWorldObjects() {
@@ -339,19 +318,18 @@
         }
     }
 
-
     function drawScene() {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
         gl.enable(gl.BLEND);
 
         mat4.identity(mvMatrix);
-        mat4.translate(mvMatrix, [0.0, 0.0, zoom]);
-        mat4.rotate(mvMatrix, degToRad(tilt), [1.0, 0.0, 0.0]);
+        mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, zoom]);
+        mat4.rotateX(mvMatrix, mvMatrix, degToRad(tilt));
 
         var twinkle = document.getElementById("twinkle").checked;
         for (var i in stars) {
@@ -360,7 +338,6 @@
         }
 
     }
-
 
     var lastTime = 0;
 
@@ -377,15 +354,12 @@
 
     }
 
-
     function tick() {
         requestAnimFrame(tick);
         handleKeys();
         drawScene();
         animate();
     }
-
-
 
     function webGLStart() {
         var canvas = document.getElementById("lesson09-canvas");
@@ -405,9 +379,7 @@
 
 </script>
 
-
 </head>
-
 
 <body onload="webGLStart();">
     <a href="http://learningwebgl.com/blog/?p=1008">&lt;&lt; Back to Lesson 9</a><br />
